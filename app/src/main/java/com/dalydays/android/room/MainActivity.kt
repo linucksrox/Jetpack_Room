@@ -24,8 +24,7 @@ class MainActivity : AppCompatActivity() {
         mDb = UserDatabase.getInstance(this)
 
         // insert a new user
-        val sampleDataUser = User(1, "Joe", "Miller", 47)
-        insertUser(sampleDataUser)
+        insertUser(User(1, "Joe", "Miller", 47))
 
         // read the sample user from the database (which will update the UI
         fetchUser()
@@ -41,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         val task = Runnable {
             val user = mDb?.UserDao()?.getAll()
             mUiHandler.post {
-                if (user == null || user?.size == 0) {
+                if (user == null || user.isEmpty()) {
                     Toast.makeText(applicationContext, "No data found in db", Toast.LENGTH_SHORT).show()
                 }
                 else {
