@@ -3,6 +3,7 @@ package com.dalydays.android.room
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -22,8 +23,43 @@ class MainActivity : AppCompatActivity() {
 
         mDb = UserDatabase.getInstance(this)
 
-        first_name_tv.text = "Joe"
-        last_name_tv.text = "Miller"
-        age_tv.text = "57"
+        // insert a new user
+        val sampleDataUser = User(1, "Joe", "Miller", 47)
+        insertUser(sampleDataUser)
+
+        // read the sample user from the database (which will update the UI
+        fetchUser()
+    }
+
+    private fun bindDataWithUi(user: User?) {
+        first_name_tv.text = user?.firstName.toString()
+        last_name_tv.text = user?.lastName.toString()
+        age_tv.text = user?.age.toString()
+    }
+
+    private fun fetchUser() {
+        val task = Runnable {
+            val user = mDb?.UserDao()?.getAll()
+            mUiHandler.post {
+                if (user == null || user?.size == 0) {
+                    Toast.makeText(applicationContext, "No data found in db", Toast.LENGTH_SHORT).show()
+                }
+                else {
+                    bindDataWithUi(user = user[0])
+                }
+            }
+        }
+        mDbWorkerThread.postTask(task)
+    }
+
+    private fun insertUser(user: User) {
+        val task = Runnable { mDb?.UserDao()?.insert(user) }
+        mDbWorkerThread.postTask(task)
+    }
+
+    override fun onDestroy() {
+        UserDatabase.destroyInstance()
+        mDbWorkerThread.quit()
+        super.onDestroy()
     }
 }
